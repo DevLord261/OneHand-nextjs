@@ -1,103 +1,110 @@
+import CrowdfundingToolbar from "@/components/ToolBar";
 import Image from "next/image";
+import Hero from "@/public/Hero.webp";
+import Link from "next/link";
+import CategoryCard from "@/components/Card";
+import CampaignCard from "@/components/CampaignCard";
+// import SearchOverlay from "@/components/home/search-overlay";
+import { Business, Medical, Restoring, Technology } from "@/resources/images";
 
-export default function Home() {
+import "./globals.css";
+import "@/styles/Home.css";
+import { getFeaturedCampaigns } from "@/lib/api/getfeaturedcampaigns";
+import { getUserProfile } from "@/lib/api/getUserProfile";
+import { GetAllCampaigns } from "@/lib/api/getCampaigns";
+import Shell from "@/components/homeshell";
+
+export default async function Home() {
+  const featuredcampaigns = await getFeaturedCampaigns();
+  const user = getUserProfile();
+  const campaigns = GetAllCampaigns();
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <>
+      <Shell user={user} campaignsPromise={campaigns} />
+      {/* <CrowdfundingToolbar
+        userPromise={user}
+        campaignsPromise={campaigns}
+        // onSearchOpen={() => setIsSearchOpen(true)}
+      /> */}
+      <main className="container">
+        {/* Hero section */}
+        <section className="herosection">
+          <picture>
+            <source srcSet="Hero.webp" type="image/webp" />
+            <Image className="herologo" src={Hero} alt="Hero logo"></Image>
+          </picture>
+          <div className="textbox">
+            <p className="maintext">A Helping Hand for a Better Tomorrow</p>
+            <p className="alttext">
+              Launch a fundraiser to support the causes you care about.
+            </p>
+            <Link type="button" href={"/campaign/create"}>
+              Start a Campaign
+            </Link>
+          </div>
+        </section>
+        {/* caregory section */}
+        <section className="categoriesSection">
+          <div className="categtext">
+            <h2 className="categtitle">Top Categories</h2>
+            <div>
+              <p>
+                Explore fundraiser in some of the platform&apos;s most popular
+                categories.
+              </p>
+              <p> There is more cause you can support - just check them all.</p>
+            </div>
+          </div>
+          <Link
+            className="see-all-categories"
+            style={{
+              cursor: "pointer",
+              fontSize: "18px",
+              height: "fit-content",
+              textDecoration: "underline",
+              color: "#007bff",
+            }}
+            href={""}
+          >
+            See all categories
+          </Link>
+        </section>
+        {/* categoryContainer */}
+        <section className="categoryScrollWrapper">
+          <div className="categorycontainer">
+            <CategoryCard logo={Medical} name="Medical" />
+            <CategoryCard logo={Business} name="Bavatarusiness" />
+            <CategoryCard logo={Technology} name="Technology" />
+            <CategoryCard logo={Restoring} name="Rebuild & Recover" />
+          </div>
+        </section>
+        <section className="Categcontainer">
+          <h1>Featured Campaigns</h1>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
+          {Array.isArray(featuredcampaigns) &&
+            featuredcampaigns.map((camp) => (
+              <CampaignCard key={camp.id} campaign={camp} />
+            ))}
+        </section>
+        <section className="trustworthy">
+          <h3>Fundraising on OneHand is easy, powerful, and trusted.</h3>
+          <p>
+            Get what you need to help your fundraiser succeed on OneHand,
+            whether you’re raising money for yourself, friends, family, or
+            charity. OneHand is a trusted leader in online fundraising. With
+            simple pricing and a team of Trust & Safety experts in your corner,
+            you can raise money or make a donation with peace of mind. memorial
+            tributes and funerals to medical emergencies and nonprofits.
+            Whenever you need help, you can ask here.
+          </p>
+        </section>
+        {/* <SearchOverlay
+          isOpen={isSearchOpen}
+          onClose={() => setIsSearchOpen(false)}
+          campaigns={allcampaigns}
+        /> */}
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+    </>
   );
 }
