@@ -1,7 +1,8 @@
 import { userProfile } from "@/types/campaign";
 import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 
-export async function getUserProfile(): Promise<userProfile> {
+export async function getUserProfile(): Promise<userProfile | null> {
   const cookieStore = await cookies();
   const token = cookieStore.get("token");
 
@@ -15,7 +16,7 @@ export async function getUserProfile(): Promise<userProfile> {
   });
 
   if (!res.ok) {
-    throw new Error("Failed to fetch user profile");
+    return null;
   }
 
   return res.json();

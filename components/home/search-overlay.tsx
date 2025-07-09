@@ -1,5 +1,5 @@
 "use client";
-import { use, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Search, X, Heart, MapPin, Calendar, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,20 +17,19 @@ import Link from "next/link";
 interface SearchOverlayProps {
   isOpen: boolean;
   onClose: () => void;
-  campaignPromise: Promise<Campaign[]>;
 }
 
-export default function SearchOverlay({
-  isOpen,
-  onClose,
-  campaignPromise,
-}: SearchOverlayProps) {
-  const campaigns = use(campaignPromise);
+export default function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredCampaigns, setFilteredCampaigns] = useState(
-    campaigns.slice(0, 6),
-  );
+  const [filteredCampaigns, setFilteredCampaigns] = useState<Campaign[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
+  const [initialLoad, setInitialLoad] = useState(false);
+
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const categories = [
     "All",
@@ -42,37 +41,96 @@ export default function SearchOverlay({
     "Emergency Relief",
   ];
 
+  const loadingRef = useRef(false);
+
+  const loadCampaigns = useCallback(
+    async (pageNum: number) => {
+      // if (loading) return;
+      if (loadingRef.current) return;
+      loadingRef.current = true;
+      setLoading(true);
+
+      try {
+        const res = await fetch(
+          `http://localhost:8080/api/campaigns/allcampaigns?page=${pageNum}`,
+        );
+
+        const data = await res.json();
+        console.log(`Loading page ${pageNum}:`, data);
+
+        if (pageNum === 0) {
+          setCampaigns(data.content);
+        } else {
+          setCampaigns((prev) => [...prev, ...data.content]);
+        }
+
+        setHasMore(pageNum + 1 < data.page.totalPages);
+        setPage(pageNum);
+      } catch (e) {
+        console.error("Failed to load campaigns:", e);
+      } finally {
+        loadingRef.current = false;
+        setLoading(false);
+      }
+    },
+    [loading],
+  );
+
+  // Initial load
   useEffect(() => {
-    if (campaigns.length > 0) {
-      setFilteredCampaigns(campaigns.slice(0, 6));
+    if (isOpen && !initialLoad) {
+      setInitialLoad(true);
+      loadCampaigns(0);
     }
-    setSelectedCategory("All");
-    setSearchQuery("");
-  }, [campaigns]);
+  }, [isOpen, initialLoad, loadCampaigns]);
+
+  // Reset when overlay closes
+  useEffect(() => {
+    if (!isOpen) {
+      setCampaigns([]);
+      setPage(0);
+      setHasMore(true);
+      setSearchQuery("");
+      setFilteredCampaigns([]);
+      setSelectedCategory("All");
+      setInitialLoad(false);
+      setLoading(false);
+      loadingRef.current = false;
+    }
+  }, [isOpen]);
+
+  const loadMore = useCallback(() => {
+    if (hasMore && !loadingRef.current) {
+      const nextPage = page + 1;
+
+      loadCampaigns(nextPage);
+    }
+  }, [hasMore, page, loadCampaigns]);
+
+  // Scroll event handler for the overlay container
+  const handleScroll = useCallback(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const { scrollTop, scrollHeight, clientHeight } = container;
+
+    // Trigger load more when user is within 200px of the bottom
+    if (scrollTop + clientHeight >= scrollHeight - 200) {
+      loadMore();
+    }
+  }, [loadMore]);
+
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (container) {
+      container.addEventListener("scroll", handleScroll);
+      return () => container.removeEventListener("scroll", handleScroll);
+    }
+  }, [handleScroll]);
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
-    if (query.trim() === "") {
-      setFilteredCampaigns(campaigns.slice(0, 6));
-    } else {
-      const filtered = campaigns.filter(
-        (campaign) =>
-          campaign.title.toLowerCase().includes(query.toLowerCase()) ||
-          campaign.description.toLowerCase().includes(query.toLowerCase()) ||
-          campaign.category.toLowerCase().includes(query.toLowerCase()) ||
-          campaign.location.toLowerCase().includes(query.toLowerCase()),
-      );
-      setFilteredCampaigns(filtered);
-    }
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
+    filterCampaigns(query, selectedCategory);
   };
 
   const handleCategoryFilter = (category: string) => {
@@ -99,9 +157,23 @@ export default function SearchOverlay({
       );
     }
 
-    setFilteredCampaigns(
-      filtered.length > 0 ? filtered : campaigns.slice(0, 6),
-    );
+    setFilteredCampaigns(filtered);
+  };
+
+  // Update filtered campaigns when campaigns change
+  useEffect(() => {
+    if (campaigns.length > 0) {
+      filterCampaigns(searchQuery, selectedCategory);
+    }
+  }, [campaigns, searchQuery, selectedCategory]);
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
   };
 
   const getProgressPercentage = (raised: number, goal: number) => {
@@ -110,9 +182,13 @@ export default function SearchOverlay({
 
   if (!isOpen) return null;
 
+  // Show campaigns from filtered results if there's a search/filter, otherwise show all campaigns
+  const displayCampaigns =
+    searchQuery || selectedCategory !== "All" ? filteredCampaigns : campaigns;
+
   return (
     <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm">
-      <div className="absolute inset-0 overflow-auto">
+      <div ref={scrollContainerRef} className="absolute inset-0 overflow-auto">
         <div className="min-h-full bg-white">
           {/* Header */}
           <div className="sticky top-0 z-10 bg-white border-b shadow-sm">
@@ -126,7 +202,7 @@ export default function SearchOverlay({
                     value={searchQuery}
                     onChange={(e) => handleSearch(e.target.value)}
                     className="pl-10 pr-4 py-3 text-lg border-2 border-gray-200 focus:border-blue-500 rounded-lg"
-                    // autoFocus
+                    autoFocus
                   />
                 </div>
                 <Button
@@ -163,17 +239,18 @@ export default function SearchOverlay({
                 ))}
               </div>
             </div>
+
             {searchQuery && (
               <div className="mb-6">
                 <p className="text-gray-600">
                   {filteredCampaigns.length} campaign
-                  {filteredCampaigns.length !== 1 ? "s" : ""} found for
-                  {searchQuery}
+                  {filteredCampaigns.length !== 1 ? "s" : ""} found for "
+                  {searchQuery}"
                 </p>
               </div>
             )}
 
-            {filteredCampaigns.length === 0 ? (
+            {displayCampaigns.length === 0 && !loading ? (
               <div className="text-center py-12">
                 <Search className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold text-gray-600 mb-2">
@@ -184,111 +261,118 @@ export default function SearchOverlay({
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredCampaigns.map((campaign) => (
-                  <Link key={campaign.id} href={`/campaign/${campaign.id}`}>
-                    <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-200">
-                      <CardHeader className="p-0">
-                        <div className="relative">
-                          <Image
-                            src={
-                              campaign.mainimage ||
-                              "https://imagehandler.fra1.digitaloceanspaces.com/defautuser.jpg"
-                            }
-                            alt={campaign.title}
-                            width={300}
-                            height={200}
-                            className="w-full h-48 object-cover"
-                          />
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="absolute top-3 right-3 w-8 h-8 bg-white/80 hover:bg-white rounded-full"
-                          >
-                            <Heart className="w-4 h-4" />
-                          </Button>
-                          <Badge className="absolute bottom-3 left-3 bg-white/90 text-gray-800 hover:bg-white">
-                            {campaign.category}
-                          </Badge>
-                        </div>
-                      </CardHeader>
-
-                      <CardContent className="p-4">
-                        <h3 className="font-semibold text-lg mb-2 line-clamp-2">
-                          {campaign.title}
-                        </h3>
-                        <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                          {campaign.description}
-                        </p>
-
-                        <div className="space-y-3">
-                          <div className="flex items-center gap-2 text-sm text-gray-500">
-                            <MapPin className="w-4 h-4" />
-                            <span>{campaign.location}</span>
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {displayCampaigns.map((campaign, index) => (
+                    <Link key={campaign.id} href={`/campaign/${campaign.id}`}>
+                      <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-200">
+                        <CardHeader className="p-0">
+                          <div className="relative">
+                            <Image
+                              src={
+                                campaign.mainimage ||
+                                "https://imagehandler.fra1.digitaloceanspaces.com/defautuser.jpg"
+                              }
+                              alt={campaign.title}
+                              width={300}
+                              height={200}
+                              className="w-full h-48 object-cover"
+                            />
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="absolute top-3 right-3 w-8 h-8 bg-white/80 hover:bg-white rounded-full"
+                            >
+                              <Heart className="w-4 h-4" />
+                            </Button>
+                            <Badge className="absolute bottom-3 left-3 bg-white/90 text-gray-800 hover:bg-white">
+                              {campaign.category}
+                            </Badge>
                           </div>
+                        </CardHeader>
 
-                          <div>
-                            <div className="flex justify-between items-center mb-1">
-                              <span className="text-sm font-medium text-gray-700">
-                                {formatCurrency(campaign.currentDonation)}{" "}
-                                raised
-                              </span>
-                              <span className="text-sm text-gray-500">
-                                {getProgressPercentage(
-                                  campaign.currentDonation,
-                                  campaign.donationGoal,
-                                ).toFixed(0)}
-                                %
-                              </span>
+                        <CardContent className="p-4">
+                          <h3 className="font-semibold text-lg mb-2 line-clamp-2">
+                            {campaign.title}
+                          </h3>
+                          <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                            {campaign.description}
+                          </p>
+
+                          <div className="space-y-3">
+                            <div className="flex items-center gap-2 text-sm text-gray-500">
+                              <MapPin className="w-4 h-4" />
+                              <span>{campaign.location}</span>
                             </div>
-                            <div className="w-full bg-gray-200 rounded-full h-2">
-                              <div
-                                className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-300"
-                                style={{
-                                  width: `${getProgressPercentage(
+
+                            <div>
+                              <div className="flex justify-between items-center mb-1">
+                                <span className="text-sm font-medium text-gray-700">
+                                  {formatCurrency(campaign.currentDonation)}{" "}
+                                  raised
+                                </span>
+                                <span className="text-sm text-gray-500">
+                                  {getProgressPercentage(
                                     campaign.currentDonation,
                                     campaign.donationGoal,
-                                  )}%`,
-                                }}
-                              />
+                                  ).toFixed(0)}
+                                  %
+                                </span>
+                              </div>
+                              <div className="w-full bg-gray-200 rounded-full h-2">
+                                <div
+                                  className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-300"
+                                  style={{
+                                    width: `${getProgressPercentage(
+                                      campaign.currentDonation,
+                                      campaign.donationGoal,
+                                    )}%`,
+                                  }}
+                                />
+                              </div>
+                              <div className="flex justify-between items-center mt-1 text-xs text-gray-500">
+                                <span>
+                                  Goal: {formatCurrency(campaign.donationGoal)}
+                                </span>
+                              </div>
                             </div>
-                            <div className="flex justify-between items-center mt-1 text-xs text-gray-500">
-                              <span>
-                                Goal: {formatCurrency(campaign.donationGoal)}
-                              </span>
+                          </div>
+                        </CardContent>
+
+                        <CardFooter className="p-4 pt-0 flex justify-between items-center">
+                          <div className="flex items-center gap-4 text-sm text-gray-500">
+                            <div className="flex items-center gap-1">
+                              <Target className="w-4 h-4" />
+                              <span>{campaign.donatercount} supporters</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Calendar className="w-4 h-4" />
+                              <span>{campaign.daysLeft} days left</span>
                             </div>
                           </div>
-                        </div>
-                      </CardContent>
+                        </CardFooter>
+                      </Card>
+                    </Link>
+                  ))}
+                </div>
 
-                      <CardFooter className="p-4 pt-0 flex justify-between items-center">
-                        <div className="flex items-center gap-4 text-sm text-gray-500">
-                          <div className="flex items-center gap-1">
-                            <Target className="w-4 h-4" />
-                            <span>{campaign.donatercount} supporters</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Calendar className="w-4 h-4" />
-                            <span>{campaign.daysLeft} days left</span>
-                          </div>
-                        </div>
-                      </CardFooter>
-                    </Card>
-                  </Link>
-                ))}
-              </div>
-            )}
+                {/* Loading indicator */}
+                {loading && (
+                  <div className="text-center py-8">
+                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    <p className="mt-2 text-gray-500">
+                      Loading more campaigns...
+                    </p>
+                  </div>
+                )}
 
-            {!searchQuery && filteredCampaigns.length === 6 && (
-              <div className="text-center mt-8">
-                <Button
-                  variant="outline"
-                  onClick={() => setFilteredCampaigns(campaigns)}
-                  className="px-8 py-2"
-                >
-                  View All Campaigns
-                </Button>
-              </div>
+                {/* No more campaigns message */}
+                {!hasMore && displayCampaigns.length > 0 && !loading && (
+                  <div className="text-center py-8">
+                    <p className="text-gray-500">No more campaigns to load</p>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>

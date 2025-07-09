@@ -25,7 +25,7 @@ export default function CrowdfundingToolbar({
   userPromise,
   onSearchOpen,
 }: {
-  userPromise: Promise<userProfile>;
+  userPromise: Promise<userProfile | null>;
   onSearchOpen?: () => void;
 }) {
   const data = use(userPromise);

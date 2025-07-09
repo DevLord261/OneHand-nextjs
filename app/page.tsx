@@ -1,4 +1,3 @@
-import CrowdfundingToolbar from "@/components/ToolBar";
 import Image from "next/image";
 import Hero from "@/public/Hero.webp";
 import Link from "next/link";
@@ -11,17 +10,16 @@ import "./globals.css";
 import "@/styles/Home.css";
 import { getFeaturedCampaigns } from "@/lib/api/getfeaturedcampaigns";
 import { getUserProfile } from "@/lib/api/getUserProfile";
-import { GetAllCampaigns } from "@/lib/api/getCampaigns";
+
 import Shell from "@/components/homeshell";
 
 export default async function Home() {
   const featuredcampaigns = await getFeaturedCampaigns();
   const user = getUserProfile();
-  const campaigns = GetAllCampaigns();
 
   return (
     <>
-      <Shell user={user} campaignsPromise={campaigns} />
+      <Shell user={user} />
       {/* <CrowdfundingToolbar
         userPromise={user}
         campaignsPromise={campaigns}

@@ -1,3 +1,5 @@
+"use client";
+
 import "@/components/tiptap-node/paragraph-node/paragraph-node.scss";
 import "@/components/tiptap-node/image-node/image-node.scss";
 
@@ -18,17 +20,19 @@ import { HeadingButton } from "@/components/tiptap-ui/heading-button";
 import { ImageUploadButton } from "@/components/tiptap-ui/image-upload-button";
 import { MarkButton } from "@/components/tiptap-ui/mark-button";
 import { TextAlignButton } from "@/components/tiptap-ui/text-align-button";
+import { useCreateCampaign } from "@/app/context/CreateCampaignContext";
 
 interface TextEditorProps extends HTMLAttributes<HTMLDivElement> {
-  onUpdate?: (html: string) => void; // or any other method signature
+  // onUpdate?: (html: string) => void; // or any other method signature
   token: string;
 }
 
 const TextEditor = forwardRef<HTMLDivElement, TextEditorProps>(
-  ({ className, onUpdate, token, ...props }, ref) => {
+  ({ className, token, ...props }, ref) => {
+    const { setFormData } = useCreateCampaign();
     TextEditor.displayName = "Editor";
     const MAX_FILE_SIZE = 2048 * 2048;
-    const API_URL = import.meta.env.VITE_API_URL;
+    const API_URL = "http://localhost:8080";
 
     const handleImageUpload = async (
       file: File,
@@ -56,7 +60,7 @@ const TextEditor = forwardRef<HTMLDivElement, TextEditorProps>(
         const formdata = new FormData();
         formdata.append("list", file);
 
-        const res = await fetch(`${API_URL}/api/campaigns/upload`, {
+        const res = await fetch(`http://localhost:8080/api/campaigns/upload`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -106,7 +110,7 @@ const TextEditor = forwardRef<HTMLDivElement, TextEditorProps>(
       immediatelyRender: false,
       autofocus: true,
       onUpdate: ({ editor }) => {
-        onUpdate?.(editor.getHTML());
+        setFormData((prev) => ({ ...prev, description: editor.getHTML() }));
       },
     });
 
