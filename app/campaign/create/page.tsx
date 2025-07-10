@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 
 import { ArrowLeft, ArrowRight, Eye, Link, Save } from "lucide-react";
 
-import { FormEvent, useState } from "react";
+import { useState } from "react";
 import { steps } from "./utils";
 import { Separator } from "@radix-ui/react-separator";
 import RenderCategorySelection from "../CategorySelection";

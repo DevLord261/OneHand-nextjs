@@ -9,7 +9,6 @@ import { Editor } from "@tiptap/core";
 import { StarterKit } from "@tiptap/starter-kit";
 
 import { Image } from "@tiptap/extension-image";
-import { Paragraph } from "@tiptap/extension-paragraph";
 import { Underline } from "@tiptap/extension-underline";
 import { Superscript } from "@tiptap/extension-superscript";
 import { Subscript } from "@tiptap/extension-subscript";
@@ -28,7 +27,7 @@ interface TextEditorProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 const TextEditor = forwardRef<HTMLDivElement, TextEditorProps>(
-  ({ className, token, ...props }, ref) => {
+  ({ token, ...props }, ref) => {
     const { setFormData } = useCreateCampaign();
     TextEditor.displayName = "Editor";
     const MAX_FILE_SIZE = 2048 * 2048;
