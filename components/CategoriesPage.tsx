@@ -1,5 +1,6 @@
 import React from "react";
 import "@/styles/CategoriesPage.css"; // Create this CSS file
+import Image from "next/image";
 
 const categories = [
   {

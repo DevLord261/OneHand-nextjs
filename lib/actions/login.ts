@@ -2,7 +2,7 @@
 
 import { cookies } from "next/headers";
 import { FormState, LoginFormSchema } from "../definitions";
-import { redirect, RedirectType } from "next/navigation";
+import { redirect } from "next/navigation";
 
 export async function login(state: FormState, formData: FormData) {
   const validatedFields = LoginFormSchema.safeParse({

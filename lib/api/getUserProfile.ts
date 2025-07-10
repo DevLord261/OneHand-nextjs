@@ -1,6 +1,5 @@
 import { userProfile } from "@/types/campaign";
 import { cookies } from "next/headers";
-import { NextResponse } from "next/server";
 
 export async function getUserProfile(): Promise<userProfile | null> {
   const cookieStore = await cookies();
