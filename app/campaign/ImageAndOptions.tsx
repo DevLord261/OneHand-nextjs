@@ -16,7 +16,7 @@ export default function ImageAndOptions() {
   } = useCreateCampaign();
 
   const removeImage = () => {
-    formData.mainImage = null;
+    formData.mainimage = null;
     setImagePreview("");
     setImageError("");
   };
@@ -38,7 +38,7 @@ export default function ImageAndOptions() {
     }
 
     setImageError("");
-    setFormData((prev) => ({ ...prev, mainImage: file }));
+    setFormData((prev) => ({ ...prev, mainimage: file }));
 
     // Create preview
     const reader = new FileReader();

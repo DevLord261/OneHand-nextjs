@@ -16,8 +16,7 @@ import {
   CreateCampaignProvider,
   useCreateCampaign,
 } from "@/app/context/CreateCampaignContext";
-import { NextResponse } from "next/server";
-import { redirect, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 export default function Index() {
   return (
@@ -32,7 +31,7 @@ function CreateCampaign() {
   const { formData, setErrors, setImageError } = useCreateCampaign();
   const router = useRouter();
   const token =
-    "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJoYXNzb24iLCJ1c2VySWQiOiIyOGI4NGE5Mi04Y2MzLTQ5Y2MtYTFkMS02NmNiMDExOGJlODUiLCJmdWxsbmFtZSI6Im1obWQgYmF5b3VtaSIsInJvbGVzIjoiUEFSVElDSVBBTlQiLCJlbWFpbCI6Imh1c3NlaW5iYXlvdW1lQGdtYWlsLmNvbSIsInVzZXJuYW1lIjoiaGFzc29uIiwiaWF0IjoxNzUyMDcxNTI4LCJleHAiOjE3NTIxNTc5Mjh9.cAvb06JhCQ0ZEOJMhKXSFB0HN_fQkLVBa3O8HlvaPfY";
+    "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJoYXNzb24iLCJ1c2VySWQiOiIyOGI4NGE5Mi04Y2MzLTQ5Y2MtYTFkMS02NmNiMDExOGJlODUiLCJmdWxsbmFtZSI6Im1obWQgYmF5b3VtaSIsInJvbGVzIjoiUEFSVElDSVBBTlQiLCJlbWFpbCI6Imh1c3NlaW5iYXlvdW1lQGdtYWlsLmNvbSIsInVzZXJuYW1lIjoiaGFzc29uIiwiaWF0IjoxNzUyMTQxNTM0LCJleHAiOjE3NTIyMjc5MzR9.Xfi2ApRSZ4a1hhbAB-AT8fBtQcZ_hrhtlDq_IuJFBZw";
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
@@ -48,7 +47,7 @@ function CreateCampaign() {
   };
 
   const validateMediaStep = () => {
-    if (!formData.mainImage) {
+    if (!formData.mainimage) {
       setImageError("Campaign image is required");
       return false;
     }
@@ -65,20 +64,24 @@ function CreateCampaign() {
     }
     setCurrentStep(currentStep + 1);
   };
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  async function Handlesubmition(
-    event: FormEvent<HTMLFormElement>,
-  ): Promise<void> {
-    event.preventDefault();
+  const Handlesubmition = async () => {
+    // Add loading state
+
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+
     const data = new FormData();
 
     Object.entries(formData).forEach(([key, value]) => {
       if (value === null || value === undefined) return; // skip nulls
 
       if (value instanceof File) {
-        data.append(key, value); // file field
+        data.append("main", value); // file field
       } else if (value instanceof Date) {
-        data.append(key, value.toISOString()); // date as ISO string
+        data.append("date", value.toISOString().split("T")[0]); // date as ISO string
       } else if (typeof value === "boolean") {
         data.append(key, value.toString()); // booleans to string
       } else if (key == "city" || key == "country") {
@@ -98,12 +101,22 @@ function CreateCampaign() {
           Authorization: `Bearer ${token}`,
         },
       });
-      if (!res.ok) router.push("/404");
+      if (!res.ok) {
+        console.error("Campaign creation failed:", res.status, res.statusText);
+        // Show error message to user instead of redirecting
+        setErrors({ general: "Failed to create campaign. Please try again." });
+        setIsSubmitting(false);
+        return;
+      }
       router.replace("/");
     } catch (e) {
       console.error(e);
+      setErrors({
+        general: "Network error. Please check your connection and try again.",
+      });
+      setIsSubmitting(false);
     }
-  }
+  };
 
   return (
     <div className="container">
@@ -112,7 +125,7 @@ function CreateCampaign() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Link
-                to={"/"}
+                href={"/"}
                 className="gap-2 flex flex-row justify-center items-center"
               >
                 <ArrowLeft className="w-4 h-4" />
@@ -197,7 +210,13 @@ function CreateCampaign() {
           </div>
 
           {/* Main Content */}
-          <form onSubmit={Handlesubmition}>
+
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              // Handlesubmition();
+            }}
+          >
             <Card
               className={currentStep < 3 ? "cardcontainer" : "descpcontainer"}
             >
@@ -253,6 +272,8 @@ function CreateCampaign() {
                         size="sm"
                         className="gap-2 bg-indigo-600 hover:bg-indigo-700"
                         type="submit"
+                        onClick={Handlesubmition}
+                        disabled={isSubmitting}
                       >
                         Create Campaign
                         <ArrowRight className="w-4 h-4" />

@@ -32,7 +32,13 @@ const TextEditor = forwardRef<HTMLDivElement, TextEditorProps>(
     const { setFormData } = useCreateCampaign();
     TextEditor.displayName = "Editor";
     const MAX_FILE_SIZE = 2048 * 2048;
-    const API_URL = "http://localhost:8080";
+
+    // Add this handler to prevent form submission on Enter
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.stopPropagation();
+      }
+    };
 
     const handleImageUpload = async (
       file: File,
@@ -86,7 +92,13 @@ const TextEditor = forwardRef<HTMLDivElement, TextEditorProps>(
 
     const editor: Editor | null = useEditor({
       extensions: [
-        StarterKit,
+        StarterKit.configure({
+          paragraph: {
+            HTMLAttributes: {
+              class: "fixspace",
+            },
+          },
+        }),
         Image,
         ImageUploadNode.configure({
           accept: "image/*",
@@ -98,11 +110,7 @@ const TextEditor = forwardRef<HTMLDivElement, TextEditorProps>(
         Underline,
         Superscript,
         Subscript,
-        Paragraph.configure({
-          HTMLAttributes: {
-            class: "fixspace",
-          },
-        }),
+
         TextAlign.configure({
           types: ["heading"],
         }),
@@ -146,6 +154,7 @@ const TextEditor = forwardRef<HTMLDivElement, TextEditorProps>(
           editor={editor}
           role="presentation"
           className="simple-editor-content"
+          onKeyDown={handleKeyDown}
         />
       </EditorContext.Provider>
     );

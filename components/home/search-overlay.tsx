@@ -244,8 +244,8 @@ export default function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
               <div className="mb-6">
                 <p className="text-gray-600">
                   {filteredCampaigns.length} campaign
-                  {filteredCampaigns.length !== 1 ? "s" : ""} found for "
-                  {searchQuery}"
+                  {filteredCampaigns.length !== 1 ? "s" : ""} found for
+                  {searchQuery}
                 </p>
               </div>
             )}
@@ -296,7 +296,7 @@ export default function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
                             {campaign.title}
                           </h3>
                           <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                            {campaign.description}
+                            {campaign.shortDescription}
                           </p>
 
                           <div className="space-y-3">

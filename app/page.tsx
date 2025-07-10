@@ -6,7 +6,7 @@ import CampaignCard from "@/components/CampaignCard";
 // import SearchOverlay from "@/components/home/search-overlay";
 import { Business, Medical, Restoring, Technology } from "@/resources/images";
 
-import "./globals.css";
+// import "./globals.css";
 import "@/styles/Home.css";
 import { getFeaturedCampaigns } from "@/lib/api/getfeaturedcampaigns";
 import { getUserProfile } from "@/lib/api/getUserProfile";
@@ -20,11 +20,7 @@ export default async function Home() {
   return (
     <>
       <Shell user={user} />
-      {/* <CrowdfundingToolbar
-        userPromise={user}
-        campaignsPromise={campaigns}
-        // onSearchOpen={() => setIsSearchOpen(true)}
-      /> */}
+
       <main className="container">
         {/* Hero section */}
         <section className="herosection">
