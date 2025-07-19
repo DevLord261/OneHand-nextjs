@@ -2,8 +2,6 @@
 
 OneHand is a user-friendly crowdfunding platform designed to empower individuals and communities by making it easy to create, share, and support fundraising campaigns. It fosters collaboration and generosity, helping projects and causes gain the financial support they need to succeed.
 
-for the Backend download [OneHand-Springboot](https://github.com/DevLord261/OneHand-Springboot.git)
-and run the project
 ### Features
 
 Search campaigns
