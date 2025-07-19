@@ -1,36 +1,30 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## OneHand
+
+OneHand is a user-friendly crowdfunding platform designed to empower individuals and communities by making it easy to create, share, and support fundraising campaigns. It fosters collaboration and generosity, helping projects and causes gain the financial support they need to succeed.
+
+for the Backend download [OneHand-Springboot](https://github.com/DevLord261/OneHand-Springboot.git)
+and run the project
+### Features
+
+Search campaigns
+Donation(either by money or tools)
+volunteers in campaigns (example planting trees where some people don't need a money support)
+
+
+### Functionalities
+
+- [x] Search
+- [x] Show Featured in Home
+- [x] Login,Signup
+- [ ] Create Campaign
+- [ ] View Campaign
+- [ ] Dashboard
+- [ ] Reports
+- [ ] Donations
+- [ ] volunteer
 
 ## Getting Started
 
-First, run the development server:
+In Order to Start working and testing the project you need to run the  [OneHand Springboot backend](https://github.com/DevLord261/OneHand-Springboot.git) and configure the DataSource to connect to your localdatabse and setup the api_URL in the .env variables
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Note: in this version i am still using static link to fetch from frontend so .env not working right now
