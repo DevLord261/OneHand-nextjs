@@ -4,8 +4,10 @@ OneHand is a user-friendly crowdfunding platform designed to empower individuals
 
 ### Features
 
-Search campaigns
-Donation(either by money or tools)
+Search campaigns,
+
+Donation(either by money or tools),
+
 volunteers in campaigns (example planting trees where some people don't need a money support)
 
 
