@@ -8,25 +8,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  LineChart,
-  Line,
-  Legend,
-} from "recharts";
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
+
 import {
   Users,
   Shield,
@@ -193,36 +175,7 @@ export function DashboardPage() {
                   Distribution of usage across different categories
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <ChartContainer
-                  config={{
-                    count: {
-                      label: "Usage",
-                      color: "hsl(var(--chart-1))",
-                    },
-                  }}
-                  className="h-[300px]"
-                >
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={categoryData}
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="count"
-                        label={({ category, count }) => `${category}: ${count}`}
-                      >
-                        {categoryData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <ChartTooltip content={<ChartTooltipContent />} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </ChartContainer>
-              </CardContent>
+              <CardContent></CardContent>
             </Card>
 
             {/* User Activity Trend */}
@@ -233,43 +186,7 @@ export function DashboardPage() {
                   Active vs total users over time
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <ChartContainer
-                  config={{
-                    active: {
-                      label: "Active Users",
-                      color: "hsl(var(--chart-1))",
-                    },
-                    total: {
-                      label: "Total Users",
-                      color: "hsl(var(--chart-2))",
-                    },
-                  }}
-                  className="h-[300px]"
-                >
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={dashboardData.userActivity}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="month" />
-                      <YAxis />
-                      <ChartTooltip content={<ChartTooltipContent />} />
-                      <Legend />
-                      <Line
-                        type="monotone"
-                        dataKey="active"
-                        stroke="var(--color-active)"
-                        name="Active Users"
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="total"
-                        stroke="var(--color-total)"
-                        name="Total Users"
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </ChartContainer>
-              </CardContent>
+              <CardContent></CardContent>
             </Card>
           </div>
         </TabsContent>
@@ -366,27 +283,7 @@ export function DashboardPage() {
                   How frequently different permissions are used
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <ChartContainer
-                  config={{
-                    usage: {
-                      label: "Usage %",
-                      color: "hsl(var(--chart-1))",
-                    },
-                  }}
-                  className="h-[300px]"
-                >
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={dashboardData.permissionUsage}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="permission" />
-                      <YAxis />
-                      <ChartTooltip content={<ChartTooltipContent />} />
-                      <Bar dataKey="usage" fill="var(--color-usage)" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </ChartContainer>
-              </CardContent>
+              <CardContent></CardContent>
             </Card>
 
             {/* Role Permissions Matrix */}
@@ -397,33 +294,7 @@ export function DashboardPage() {
                   Number of permissions per role
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <ChartContainer
-                  config={{
-                    permissions: {
-                      label: "Permissions",
-                      color: "hsl(var(--chart-2))",
-                    },
-                  }}
-                  className="h-[300px]"
-                >
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={dashboardData.rolePermissions}
-                      layout="horizontal"
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis type="number" />
-                      <YAxis dataKey="role" type="category" width={80} />
-                      <ChartTooltip content={<ChartTooltipContent />} />
-                      <Bar
-                        dataKey="permissions"
-                        fill="var(--color-permissions)"
-                      />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </ChartContainer>
-              </CardContent>
+              <CardContent></CardContent>
             </Card>
           </div>
         </TabsContent>

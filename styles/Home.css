@@ -3,7 +3,7 @@
 .container {
     display: grid;
     height: 100%;
-    width: 100%;
+    min-width: 100vw;
     grid-template-rows: auto 1fr auto;
     grid-template-areas:
         "nav"

@@ -14,7 +14,7 @@ export default function CampaignCard({ campaign }: { campaign: Campaign }) {
     <Link className={styles.container} href={`/campaign/${campaign.id}`}>
       <Image
         className={styles.image}
-        src={campaign.mainimage}
+        src={campaign.heroimage}
         alt="solar energy"
         width={100}
         height={100}

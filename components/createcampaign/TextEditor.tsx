@@ -3,7 +3,7 @@
 import "@/components/tiptap-node/paragraph-node/paragraph-node.scss";
 import "@/components/tiptap-node/image-node/image-node.scss";
 
-import { forwardRef, HTMLAttributes } from "react";
+import { forwardRef, HTMLAttributes, useEffect } from "react";
 import { EditorContent, EditorContext, useEditor } from "@tiptap/react";
 import { Editor } from "@tiptap/core";
 import { StarterKit } from "@tiptap/starter-kit";
@@ -20,17 +20,23 @@ import { ImageUploadButton } from "@/components/tiptap-ui/image-upload-button";
 import { MarkButton } from "@/components/tiptap-ui/mark-button";
 import { TextAlignButton } from "@/components/tiptap-ui/text-align-button";
 import { useCreateCampaign } from "@/app/context/CreateCampaignContext";
+import { redirect } from "next/navigation";
 
 interface TextEditorProps extends HTMLAttributes<HTMLDivElement> {
   // onUpdate?: (html: string) => void; // or any other method signature
   token: string;
 }
 
-const TextEditor = forwardRef<HTMLDivElement, TextEditorProps>(({ token }) => {
+const TextEditor = forwardRef<HTMLDivElement, TextEditorProps>((props, ref) => {
   const { setFormData } = useCreateCampaign();
   TextEditor.displayName = "Editor";
   const MAX_FILE_SIZE = 2048 * 2048;
 
+  const { token } = props;
+
+  useEffect(() => {
+    if (token == null) redirect("/auth");
+  }, [token]);
   // Add this handler to prevent form submission on Enter
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -123,6 +129,7 @@ const TextEditor = forwardRef<HTMLDivElement, TextEditorProps>(({ token }) => {
   return (
     <EditorContext.Provider value={{ editor }}>
       <div
+        ref={ref}
         className="tiptap-button-group border rounded-lg bg-slate-50/50 p-4"
         data-orientation="horizontal"
       >

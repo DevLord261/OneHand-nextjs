@@ -47,7 +47,7 @@ function CreateCampaign() {
   };
 
   const validateMediaStep = () => {
-    if (!formData.mainimage) {
+    if (!formData.heroimage) {
       setImageError("Campaign image is required");
       return false;
     }

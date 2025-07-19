@@ -13,8 +13,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Heart, CreditCard, AlertCircleIcon } from "lucide-react";
-import { Form, json, useFetcher } from "@remix-run/react";
 import { Alert, AlertTitle, AlertDescription } from "./ui/alert";
+import { NextResponse } from "next/server";
 
 interface DonationModalProps {
   isOpen: boolean;
@@ -39,8 +39,6 @@ export function DonationModal({
 
   const predefinedAmounts = ["25", "50", "100", "250", "custom"];
 
-  const fetcher = useFetcher();
-
   const handleDonate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsProcessing(true);
@@ -50,20 +48,20 @@ export function DonationModal({
     formdata.append("id", campaignId);
     formdata.append("amount", amount != "custom" ? amount : customAmount);
     formdata.append("intent", "donate");
-    fetcher.submit(formdata, {
-      method: "post",
-      action: `/campaign/${campaignId}`,
-    });
+    // fetcher.submit(formdata, {
+    //   method: "post",
+    //   action: `/campaign/${campaignId}`,
+    // });
 
     setIsProcessing(false);
     onClose();
-    return json({ message: "donation succesfull" });
+    return NextResponse.json({ message: "donation succesfull" });
   };
 
   const selectedAmount = amount === "custom" ? customAmount : amount;
 
   return (
-    <Form method="POST" onSubmit={handleDonate}>
+    <form method="POST" onSubmit={handleDonate}>
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -118,7 +116,7 @@ export function DonationModal({
               <Checkbox
                 id="anonymous"
                 checked={isAnonymous}
-                onCheckedChange={setIsAnonymous}
+                onCheckedChange={() => setIsAnonymous(!isAnonymous)}
               />
               <Label htmlFor="anonymous" className="text-sm">
                 Donate anonymously
@@ -154,7 +152,7 @@ export function DonationModal({
                 Cancel
               </Button>
               <Button
-                onClick={handleDonate}
+                // onClick={handleDonate}
                 disabled={!selectedAmount || isProcessing || !islogin}
                 className="flex-1"
               >
@@ -165,6 +163,6 @@ export function DonationModal({
           </div>
         </DialogContent>
       </Dialog>
-    </Form>
+    </form>
   );
 }

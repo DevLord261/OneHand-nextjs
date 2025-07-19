@@ -28,6 +28,8 @@ export default function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
   const [filteredCampaigns, setFilteredCampaigns] = useState<Campaign[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [initialLoad, setInitialLoad] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+  const MAX_RETRIES = 3;
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -43,38 +45,52 @@ export default function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
 
   const loadingRef = useRef(false);
 
-  const loadCampaigns = useCallback(
-    async (pageNum: number) => {
-      // if (loading) return;
-      if (loadingRef.current) return;
-      loadingRef.current = true;
-      setLoading(true);
+  const loadCampaigns = useCallback(async (pageNum: number, retry = 0) => {
+    if (loadingRef.current) return;
+    loadingRef.current = true;
+    setLoading(true);
 
-      try {
-        const res = await fetch(
-          `http://localhost:8080/api/campaigns/allcampaigns?page=${pageNum}`,
-        );
+    try {
+      const res = await fetch(
+        `http://localhost:8080/api/campaigns/pages?pagenumber=${pageNum}&size=6`,
+        {
+          method: "GET",
+        },
+      );
 
-        const data = await res.json();
-        console.log(`Loading page ${pageNum}:`, data);
-
-        if (pageNum === 0) {
-          setCampaigns(data.content);
-        } else {
-          setCampaigns((prev) => [...prev, ...data.content]);
-        }
-
-        setHasMore(pageNum + 1 < data.page.totalPages);
-        setPage(pageNum);
-      } catch (e) {
-        console.error("Failed to load campaigns:", e);
-      } finally {
-        loadingRef.current = false;
-        setLoading(false);
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
       }
-    },
-    [loading],
-  );
+
+      const data = await res.json();
+      console.log(`Loading page ${pageNum}:`, data);
+
+      if (pageNum === 0) {
+        setCampaigns(data.content);
+      } else {
+        setCampaigns((prev) => [...prev, ...data.content]);
+      }
+
+      setHasMore(pageNum + 1 < data.page.totalPages);
+      setPage(pageNum);
+      setRetryCount(0);
+    } catch (e) {
+      console.error("Failed to load campaigns:", e);
+      if (retry < MAX_RETRIES) {
+        console.log(`Retrying... (${retry + 1}/${MAX_RETRIES})`);
+        setTimeout(
+          () => {
+            loadCampaigns(pageNum, retry + 1);
+          },
+          1000 * (retry + 1),
+        ); // Exponential backoff
+        return;
+      }
+    } finally {
+      loadingRef.current = false;
+      setLoading(false);
+    }
+  }, []);
 
   // Initial load
   useEffect(() => {
@@ -113,19 +129,28 @@ export default function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
     if (!container) return;
 
     const { scrollTop, scrollHeight, clientHeight } = container;
-
+    const threshold = 200; // pixels from bottom
     // Trigger load more when user is within 200px of the bottom
-    if (scrollTop + clientHeight >= scrollHeight - 200) {
+    if (scrollTop + clientHeight >= scrollHeight - threshold) {
       loadMore();
     }
-  }, [loadMore]);
+  }, [loadMore, loading, hasMore]);
 
   useEffect(() => {
     const container = scrollContainerRef.current;
-    if (container) {
-      container.addEventListener("scroll", handleScroll);
-      return () => container.removeEventListener("scroll", handleScroll);
-    }
+    if (!container) return;
+
+    let timeoutId: NodeJS.Timeout;
+    const throttledScroll = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(handleScroll, 100); // Throttle to 100ms
+    };
+
+    container.addEventListener("scroll", throttledScroll);
+    return () => {
+      container.removeEventListener("scroll", throttledScroll);
+      clearTimeout(timeoutId);
+    };
   }, [handleScroll]);
 
   const handleSearch = (query: string) => {
@@ -138,34 +163,39 @@ export default function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
     filterCampaigns(searchQuery, category);
   };
 
-  const filterCampaigns = (query: string, category: string) => {
-    let filtered = campaigns;
+  const filterCampaigns = useCallback(
+    (query: string, category: string) => {
+      let filtered = campaigns;
 
-    // Filter by category
-    if (category !== "All") {
-      filtered = filtered.filter((campaign) => campaign.category === category);
-    }
+      // Filter by category
+      if (category !== "All") {
+        filtered = filtered.filter(
+          (campaign) => campaign.category === category,
+        );
+      }
 
-    // Filter by search query
-    if (query.trim() !== "") {
-      filtered = filtered.filter(
-        (campaign) =>
-          campaign.title.toLowerCase().includes(query.toLowerCase()) ||
-          campaign.description.toLowerCase().includes(query.toLowerCase()) ||
-          campaign.category.toLowerCase().includes(query.toLowerCase()) ||
-          campaign.location.toLowerCase().includes(query.toLowerCase()),
-      );
-    }
+      // Filter by search query
+      if (query.trim() !== "") {
+        filtered = filtered.filter(
+          (campaign) =>
+            campaign.title.toLowerCase().includes(query.toLowerCase()) ||
+            campaign.description.toLowerCase().includes(query.toLowerCase()) ||
+            campaign.category.toLowerCase().includes(query.toLowerCase()) ||
+            campaign.location.toLowerCase().includes(query.toLowerCase()),
+        );
+      }
 
-    setFilteredCampaigns(filtered);
-  };
+      setFilteredCampaigns(filtered);
+    },
+    [campaigns, setFilteredCampaigns],
+  );
 
   // Update filtered campaigns when campaigns change
   useEffect(() => {
     if (campaigns.length > 0) {
       filterCampaigns(searchQuery, selectedCategory);
     }
-  }, [campaigns, searchQuery, selectedCategory]);
+  }, [campaigns, searchQuery, selectedCategory, filterCampaigns]);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -263,14 +293,14 @@ export default function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
             ) : (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {displayCampaigns.map((campaign, index) => (
+                  {displayCampaigns.map((campaign) => (
                     <Link key={campaign.id} href={`/campaign/${campaign.id}`}>
                       <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-200">
                         <CardHeader className="p-0">
                           <div className="relative">
                             <Image
                               src={
-                                campaign.mainimage ||
+                                campaign.heroimage ||
                                 "https://imagehandler.fra1.digitaloceanspaces.com/defautuser.jpg"
                               }
                               alt={campaign.title}
@@ -354,15 +384,31 @@ export default function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
                       </Card>
                     </Link>
                   ))}
+                  {hasMore && !loading && displayCampaigns.length > 0 && (
+                    <div className="text-center py-8">
+                      <Button
+                        onClick={loadMore}
+                        variant="outline"
+                        size="lg"
+                        className="px-8"
+                      >
+                        Load More Campaigns
+                      </Button>
+                    </div>
+                  )}
                 </div>
 
                 {/* Loading indicator */}
                 {loading && (
                   <div className="text-center py-8">
-                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                    <p className="mt-2 text-gray-500">
-                      Loading more campaigns...
-                    </p>
+                    {Array.from({ length: 6 }).map((_, index) => (
+                      <div key={index} className="animate-pulse">
+                        <div className="bg-gray-200 h-48 rounded-lg mb-4"></div>
+                        <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                        <div className="h-4 bg-gray-200 rounded mb-2 w-3/4"></div>
+                        <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                      </div>
+                    ))}
                   </div>
                 )}
 

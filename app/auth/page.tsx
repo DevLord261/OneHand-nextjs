@@ -8,17 +8,25 @@ import Link from "next/link";
 import { login } from "@/lib/actions/login";
 
 import "@/styles/Login.css";
+import { Register } from "@/lib/actions/register";
 
 export default function Auth() {
   const [isActive, setIsActive] = useState(false);
-  const [state, action, pending] = useActionState(login, undefined);
+  const [loginstate, loginaction, loginpending] = useActionState(
+    login,
+    undefined,
+  );
+  const [Registerstate, Registeraction, Registerpending] = useActionState(
+    Register,
+    undefined,
+  );
 
   return (
     <main className="background">
-      <div className={clsx("container", { active: isActive })}>
+      <div className={clsx("logincontainer", { active: isActive })}>
         {/* Login Form */}
         <section className={clsx("form-box", "login")}>
-          <form action={action}>
+          <form action={loginaction}>
             <h1>Login</h1>
             <div className="input-box">
               <input
@@ -37,11 +45,11 @@ export default function Auth() {
                 name="password"
               />
               <i className="bx bxs-lock-alt"></i>
-              {state?.errors?.password && (
+              {loginstate?.errors?.password && (
                 <div>
                   <p>Password must:</p>
                   <ul>
-                    {state.errors.password.map((error) => (
+                    {loginstate.errors.password.map((error) => (
                       <li key={error}>- {error}</li>
                     ))}
                   </ul>
@@ -51,14 +59,14 @@ export default function Auth() {
             <div className="forgot-link">
               <Link href={""}>Forgot Password?</Link>
             </div>
-            {state?.errors?.userName && (
+            {loginstate?.errors?.userName && (
               <Alert variant={"destructive"} style={{ padding: 12 }}>
                 <AlertCircleIcon />
                 <AlertTitle> Failed to login</AlertTitle>
                 <AlertDescription>Wrong username or password</AlertDescription>
               </Alert>
             )}
-            <button type="submit" className="btn" disabled={pending}>
+            <button type="submit" className="btn" disabled={loginpending}>
               Login
             </button>
           </form>
@@ -66,31 +74,31 @@ export default function Auth() {
 
         {/* Registration Form */}
         <section className={clsx("form-box", "register")}>
-          <form method="POST">
+          <form action={Registeraction}>
             <h1>Registration</h1>
             <input type="hidden" name="intent" value="register" />
             <div className="input-box">
               <input
                 type="text"
-                placeholder="FirstName"
+                placeholder="Firstname"
                 required
-                name="firstName"
+                name="Firstname"
               />
               <i className="bx bxs-user"></i>
             </div>
             <div className="input-box">
               <input
                 type="text"
-                placeholder="LastName"
+                placeholder="Lastname"
                 required
-                name="lastName"
+                name="Lastname"
               />
               <i className="bx bxs-user"></i>
             </div>
             <div className="input-box">
               <input
                 type="text"
-                placeholder="Username"
+                placeholder="username"
                 required
                 name="username"
               />
@@ -123,6 +131,7 @@ export default function Auth() {
             <button
               className={clsx("btn", "register-btn")}
               onClick={() => setIsActive(true)}
+              disabled={Registerpending}
             >
               Register
             </button>

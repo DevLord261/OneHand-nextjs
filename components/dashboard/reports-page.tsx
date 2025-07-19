@@ -8,21 +8,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  ResponsiveContainer,
-  LineChart,
-  Line,
-} from "recharts";
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
+
 import { Download, Calendar, Shield } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useState } from "react";
@@ -202,7 +188,7 @@ export function ReportsPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <ChartContainer
+                {/* <ChartContainer
                   config={{
                     users: {
                       label: "Total Users",
@@ -235,7 +221,7 @@ export function ReportsPage() {
                       />
                     </LineChart>
                   </ResponsiveContainer>
-                </ChartContainer>
+                </ChartContainer> */}
               </CardContent>
             </Card>
 
@@ -247,7 +233,7 @@ export function ReportsPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <ChartContainer
+                {/* <ChartContainer
                   config={{
                     logins: { label: "Logins", color: "hsl(var(--chart-1))" },
                     actions: { label: "Actions", color: "hsl(var(--chart-2))" },
@@ -272,7 +258,7 @@ export function ReportsPage() {
                       />
                     </BarChart>
                   </ResponsiveContainer>
-                </ChartContainer>
+                </ChartContainer> */}
               </CardContent>
             </Card>
           </div>

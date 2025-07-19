@@ -29,10 +29,11 @@ export default function CrowdfundingToolbar({
   onSearchOpen?: () => void;
 }) {
   const data = use(userPromise);
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   useEffect(() => {
-    setIsLoggedIn(true);
+    if (data) setIsLoggedIn(true);
   }, [data]);
 
   const handleSearchClick = () => {
@@ -49,17 +50,17 @@ export default function CrowdfundingToolbar({
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
       <div className="container mx-auto px-4">
-        <div className="flex h-16 items-center justify-between gap-4">
+        <div className="flex h-16 items-center justify-between gap-2">
           {/* Logo */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-4 flex-shrink-0">
             <Link href="/" className="flex items-center space-x-2">
               <Image src={Logo} alt="Your Company" className="h-8 w-auto" />
               <span className="font-bold text-xl text-gray-900">One Hand</span>
             </Link>
           </div>
 
-          {/* Desktop redirect */}
-          <nav className="hidden lg:flex items-center space-x-6">
+          {/* Desktop navigation */}
+          <nav className="hidden lg:flex items-center space-x-4 flex-shrink-0">
             {redirectItems.map((item) => (
               <Link
                 key={item.label}
@@ -80,7 +81,7 @@ export default function CrowdfundingToolbar({
           </nav>
 
           {/* Search Bar */}
-          <div className="hidden lg:flex items-center flex-1 max-w-md mx-8">
+          <div className="hidden lg:flex items-center flex-1 max-w-md mx-4">
             <div className="relative w-full">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
@@ -93,13 +94,13 @@ export default function CrowdfundingToolbar({
           </div>
 
           {/* Right Side Actions */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 flex-shrink-0">
             {/* Start Project Button */}
             <Button
-              className="hidden sm:flex bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+              className="hidden sm:flex bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-sm px-3 py-2"
               onClick={() => redirect("/campaign/create")}
             >
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="h-4 w-4 mr-1" />
               Start a campaign
             </Button>
 
@@ -132,7 +133,7 @@ export default function CrowdfundingToolbar({
                   <DropdownMenuTrigger asChild>
                     <Button
                       variant="ghost"
-                      className="relative h-8 w-8 rounded-full"
+                      className="relative flex items-center gap-2 pl-2 pr-3 py-2 h-auto"
                     >
                       <Avatar className="h-8 w-8">
                         <AvatarImage
@@ -144,7 +145,7 @@ export default function CrowdfundingToolbar({
                         />
                         <AvatarFallback>JD</AvatarFallback>
                       </Avatar>
-                      <span className="text-sm font-medium">
+                      <span className="text-sm font-medium max-w-24 truncate">
                         {data?.username || "Guest"}
                       </span>
                     </Button>
@@ -196,6 +197,7 @@ export default function CrowdfundingToolbar({
                   onClick={() => {
                     redirect("/auth");
                   }}
+                  className="px-3 py-2 text-sm"
                 >
                   Sign In
                 </Button>
@@ -203,7 +205,7 @@ export default function CrowdfundingToolbar({
                   onClick={() => {
                     redirect("/auth");
                   }}
-                  className="hidden sm:flex"
+                  className="hidden sm:flex px-3 py-2 text-sm"
                 >
                   Sign Up
                 </Button>
@@ -238,11 +240,12 @@ export default function CrowdfundingToolbar({
                     type="search"
                     placeholder="Search projects..."
                     className="pl-10 pr-4 w-full bg-gray-50 border-gray-200"
+                    onClick={handleSearchClick}
                   />
                 </div>
               </div>
 
-              {/* Mobile redirect */}
+              {/* Mobile navigation */}
               {redirectItems.map((item) => (
                 <a
                   key={item.label}

@@ -3,24 +3,32 @@ import Hero from "@/public/Hero.webp";
 import Link from "next/link";
 import CategoryCard from "@/components/Card";
 import CampaignCard from "@/components/CampaignCard";
-// import SearchOverlay from "@/components/home/search-overlay";
 import { Business, Medical, Restoring, Technology } from "@/resources/images";
 
-// import "./globals.css";
 import "@/styles/Home.css";
 import { getFeaturedCampaigns } from "@/lib/api/getfeaturedcampaigns";
 import { getUserProfile } from "@/lib/api/getUserProfile";
 
 import Shell from "@/components/homeshell";
+import { Campaign } from "@/types/campaign";
+import { Suspense } from "react";
 
 export default async function Home() {
-  const featuredcampaigns = await getFeaturedCampaigns();
-  const user = getUserProfile();
+  let featuredcampaigns: Campaign[] = []; //await getFeaturedCampaigns();
+  let user = null; //getUserProfile()
 
+  try {
+    featuredcampaigns = await getFeaturedCampaigns();
+    user = await getUserProfile();
+  } catch (error) {
+    console.error("Error loading home page data:", error);
+  }
   return (
     <>
-      <Shell user={user} />
-
+      {/* <Shell user={user} /> */}
+      <Suspense fallback={<div>Loading...</div>}>
+        <Shell user={Promise.resolve(user)} />
+      </Suspense>
       <main className="container">
         {/* Hero section */}
         <section className="herosection">

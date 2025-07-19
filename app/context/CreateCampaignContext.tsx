@@ -11,7 +11,7 @@ type FormData = {
   endDate: Date | null;
   category: string;
   description: string;
-  mainimage: File | null;
+  heroimage: File | null;
   enableVolunteers: boolean;
 };
 
@@ -48,7 +48,7 @@ export function CreateCampaignProvider({
     endDate: null,
     category: "",
     description: "",
-    mainimage: null,
+    heroimage: null,
     enableVolunteers: false,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});

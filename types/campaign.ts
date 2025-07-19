@@ -8,7 +8,7 @@ interface Campaign {
   currentDonation: number;
   category: string;
   isFeatured: false;
-  mainimage: string;
+  heroimage: string;
   userProfile: userProfile;
   daysLeft: number;
   shortDescription: string;
@@ -18,8 +18,8 @@ interface Campaign {
 }
 
 interface userProfile {
-  firstName: string;
-  lastName: string;
+  firstname: string;
+  lastname: string;
   email: string;
   username: string;
   avatar: string;

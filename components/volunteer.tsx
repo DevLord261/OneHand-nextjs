@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Users, Mail, Phone, AlertCircleIcon } from "lucide-react";
 import { TokenPayload } from "@/types/Token";
-import { Form, useFetcher } from "@remix-run/react";
+
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 
 interface VolunteerModalProps {
@@ -49,7 +49,6 @@ export function VolunteerModal({
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const fetcher = useFetcher();
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -61,10 +60,6 @@ export function VolunteerModal({
     });
 
     // Simulate API call
-    fetcher.submit(form, {
-      method: "post",
-      action: `/campaign/${campaignId}`,
-    });
 
     // Here you would save the volunteer application to your database
 
@@ -75,7 +70,7 @@ export function VolunteerModal({
   const isFormValid = formData.name && formData.email && agreedToTerms;
 
   return (
-    <Form method="POST" onSubmit={handleSubmit}>
+    <form method="POST" onSubmit={handleSubmit}>
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -176,7 +171,7 @@ export function VolunteerModal({
               <Checkbox
                 id="terms"
                 checked={agreedToTerms}
-                onCheckedChange={setAgreedToTerms}
+                onCheckedChange={() => setAgreedToTerms(agreedToTerms)}
               />
               <Label htmlFor="terms" className="text-sm leading-relaxed">
                 I agree to the volunteer terms and conditions and understand
@@ -202,7 +197,7 @@ export function VolunteerModal({
                 Cancel
               </Button>
               <Button
-                onClick={handleSubmit}
+                // onClick={handleSubmit}
                 disabled={!isFormValid || isSubmitting || !islogin}
                 className="flex-1"
               >
@@ -212,6 +207,6 @@ export function VolunteerModal({
           </div>
         </DialogContent>
       </Dialog>
-    </Form>
+    </form>
   );
 }

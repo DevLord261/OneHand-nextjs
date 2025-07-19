@@ -16,14 +16,47 @@ export async function login(state: FormState, formData: FormData) {
       errors: validatedFields.error.flatten().fieldErrors,
     };
   }
-  const res = await fetch("http://localhost:8080/api/auth/login", {
-    method: "POST",
-    body: formData,
-  });
+  try {
+    const res = await fetch("http://localhost:8080/api/users/login", {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+      body: JSON.stringify(validatedFields.data),
+    });
 
-  const token = await res.json();
-  const cookieStore = await cookies();
-  cookieStore.set("token", token.token);
+    if (!res.ok) {
+      return {
+        errors: {
+          userName: ["Invalid username or password"],
+        },
+      };
+    }
 
+    const token = await res.json();
+
+    if (!token.token) {
+      return {
+        errors: {
+          userName: ["Login failed - no token received"],
+        },
+      };
+    }
+    const cookieStore = await cookies();
+    // cookieStore.set("token", token.token);
+    cookieStore.set("token", token.token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 7, // 1 week
+    });
+  } catch (e) {
+    console.error("Login error:", e);
+    return {
+      errors: {
+        userName: ["Login failed - please try again"],
+      },
+    };
+  }
   redirect("/");
 }
