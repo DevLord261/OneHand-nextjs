@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -25,10 +25,11 @@ import {
 import { DonationModal } from "@/components/donation";
 import { VolunteerModal } from "@/components/volunteer";
 
-import { Campaign } from "@/types/campaign";
-import { TokenPayload } from "@/types/Token";
 import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
+import Link from "next/link";
+import { GetCampaign } from "@/lib/actions/GetCampaign";
+import { Campaign } from "@/types/campaign";
 
 export default function ViewCampaign({
   params,
@@ -37,10 +38,25 @@ export default function ViewCampaign({
 }) {
   const [showDonationModal, setShowDonationModal] = useState(false);
   const [showVolunteerModal, setShowVolunteerModal] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [campaign, setCampaign] = useState<Campaign | null>(null);
 
-  const progressPercentage =
-    (campaignData.currentDonation / campaignData.donationGoal) * 100;
-
+  const { id } = use(params);
+  // const campaign: Campaign = async () => await GetCampaign({ id });
+  useEffect(() => {
+    const fetchcampaign = async () => {
+      try {
+        setLoading(true);
+        const campaignData = await GetCampaign({ id });
+        setCampaign(campaignData);
+      } catch (e) {
+        console.error("Internal Server Error: " + e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchcampaign();
+  }, [id]);
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="header">
@@ -48,7 +64,7 @@ export default function ViewCampaign({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Link
-                to={"/"}
+                href={"/"}
                 className="gap-2 flex flex-row justify-center items-center"
               >
                 <ArrowLeft className="w-4 h-4" />
@@ -69,15 +85,17 @@ export default function ViewCampaign({
                 <div className="relative">
                   <Image
                     src={
-                      campaignData.mainimage ||
+                      campaign?.heroimage ||
                       "https://imagehandler.fra1.digitaloceanspaces.com/defautuser.jpg"
                     }
                     alt="Campaign"
                     className="w-full h-[400px] object-cover rounded-t-lg"
+                    width={100}
+                    height={100}
                   />
-                  {/* {campaignData.images.length > 1 && (
+                  {/* {campaign?.images.length > 1 && (
                     <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
-                      {campaignData.images.map((_, index) => (
+                      {campaign?.images.map((_, index) => (
                         <button
                           key={index}
                           onClick={() => setCurrentImageIndex(index)}
@@ -99,12 +117,12 @@ export default function ViewCampaign({
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className="space-y-2">
-                    <Badge variant="secondary">{campaignData.category}</Badge>
+                    <Badge variant="secondary">{campaign?.category}</Badge>
                     <CardTitle className="text-2xl">
-                      {campaignData.title}
+                      {campaign?.title}
                     </CardTitle>
                     <CardDescription className="text-lg">
-                      {campaignData.shortDescription}
+                      {campaign?.shortDescription}
                     </CardDescription>
                   </div>
                   <div className="flex space-x-2">
@@ -120,11 +138,11 @@ export default function ViewCampaign({
                 <div className="flex items-center space-x-4 text-sm text-muted-foreground">
                   <div className="flex items-center space-x-1">
                     <MapPin className="h-4 w-4" />
-                    <span>{campaignData.location}</span>
+                    <span>{campaign?.location}</span>
                   </div>
                   <div className="flex items-center space-x-1">
                     <CalendarDays className="h-4 w-4" />
-                    <span>{campaignData.daysLeft} days left</span>
+                    <span>{campaign?.daysLeft} days left</span>
                   </div>
                 </div>
               </CardHeader>
@@ -142,23 +160,21 @@ export default function ViewCampaign({
                 <Card>
                   <CardContent className="pt-6">
                     <div className="prose max-w-none">
-                      {hydrated ? (
+                      {campaign != null ? (
                         <p
                           className="whitespace-pre-line"
                           dangerouslySetInnerHTML={{
-                            __html: campaignData.description,
+                            __html: campaign.description,
                           }}
                         ></p>
-                      ) : (
-                        <p className="prose"></p>
-                      )}
+                      ) : null}
                     </div>
                   </CardContent>
                 </Card>
               </TabsContent>
 
               <TabsContent value="updates" className="space-y-4">
-                {/* {campaignData.updates.map((update) => (
+                {/* {campaign?.updates.map((update) => (
                   <Card key={update.id}>
                     <CardHeader>
                       <CardTitle className="text-lg">{update.title}</CardTitle>
@@ -181,8 +197,8 @@ export default function ViewCampaign({
                         privacy.
                       </p>
                       <p className="mt-2">
-                        Thank you to all {campaignData.donatercount} supporters!{" "}
-                        {/*{campaignData.donorCount}*/}
+                        Thank you to all {campaign?.donatercount} supporters!{" "}
+                        {/*{campaign?.donorCount}*/}
                       </p>
                     </div>
                   </CardContent>
@@ -198,24 +214,24 @@ export default function ViewCampaign({
               <CardHeader>
                 <CardTitle className="text-2xl">
                   raised of $
-                  {campaignData.currentDonation?.toLocaleString() ?? "0"}
+                  {campaign?.currentDonation?.toLocaleString() ?? "0"}
                 </CardTitle>
                 <CardDescription>
-                  ${campaignData.donationGoal?.toLocaleString() ?? "0"} goal
+                  ${campaign?.donationGoal?.toLocaleString() ?? "0"} goal
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <Progress value={progressPercentage} className="h-3" />
+                <Progress value={100} className="h-3" />
 
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <div className="font-semibold">
-                      {campaignData.donatercount}
+                      {campaign?.donatercount}
                     </div>
                     <div className="text-muted-foreground">donors</div>
                   </div>
                   <div>
-                    <div className="font-semibold">{campaignData.daysLeft}</div>
+                    <div className="font-semibold">{campaign?.daysLeft}</div>
                     <div className="text-muted-foreground">days left</div>
                   </div>
                 </div>
@@ -230,14 +246,14 @@ export default function ViewCampaign({
                     Donate Now
                   </Button>
 
-                  {campaignData.isvolunteer == true ? (
+                  {campaign?.isvolunteer == false ? (
                     <Button
                       variant="outline"
                       className="w-full bg-transparent"
                       onClick={() => setShowVolunteerModal(true)}
                     >
                       <Users className="h-4 w-4 mr-2" />
-                      Volunteer ({campaignData.volunteers})
+                      Volunteer ({campaign?.volunteers})
                     </Button>
                   ) : null}
                 </div>
@@ -254,17 +270,17 @@ export default function ViewCampaign({
                   <Avatar>
                     <AvatarImage
                       src={
-                        campaignData.userProfile.avatar ||
+                        campaign?.organizer.avatar ||
                         "https://imagehandler.fra1.digitaloceanspaces.com/defautuser.jpg"
                       }
                     />
                     <AvatarFallback>CW</AvatarFallback>
                   </Avatar>
                   <div>
-                    {campaignData.userProfile && (
+                    {campaign?.organizer && (
                       <div className="font-semibold flex items-center space-x-1">
-                        <span>{campaignData.userProfile.username}</span>
-                        {campaignData.userProfile.verified && (
+                        <span>{campaign?.organizer.username}</span>
+                        {campaign?.organizer.verified && (
                           <Badge variant="secondary" className="text-xs">
                             Verified
                           </Badge>
@@ -287,17 +303,18 @@ export default function ViewCampaign({
       <DonationModal
         isOpen={showDonationModal}
         onClose={() => setShowDonationModal(false)}
-        campaignId={campaignData.id}
-        campaignTitle={campaignData.title}
-        islogin={islogin}
+        campaignId={id}
+        campaignTitle={campaign?.title}
+        islogin={true}
       />
 
       <VolunteerModal
         isOpen={showVolunteerModal}
         onClose={() => setShowVolunteerModal(false)}
-        campaignId={campaignData.id}
-        campaignTitle={campaignData.title}
-        user={user}
+        campaignId={id}
+        campaignTitle={campaign?.title}
+        user={campaign?.organizer}
+        islogin={true}
       />
     </div>
   );

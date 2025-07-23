@@ -20,7 +20,7 @@ interface DonationModalProps {
   isOpen: boolean;
   onClose: () => void;
   campaignId: string;
-  campaignTitle: string;
+  campaignTitle: string | undefined;
   islogin: boolean;
 }
 

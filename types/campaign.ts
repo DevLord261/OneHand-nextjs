@@ -9,7 +9,7 @@ interface Campaign {
   category: string;
   isFeatured: false;
   heroimage: string;
-  userProfile: userProfile;
+  organizer: organizer;
   daysLeft: number;
   shortDescription: string;
   volunteers: string;
@@ -17,7 +17,7 @@ interface Campaign {
   isvolunteer: boolean;
 }
 
-interface userProfile {
+interface organizer {
   firstname: string;
   lastname: string;
   email: string;
@@ -27,4 +27,4 @@ interface userProfile {
   roles: string;
 }
 
-export type { Campaign, userProfile };
+export type { Campaign, organizer };

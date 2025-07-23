@@ -1,10 +1,10 @@
 "use client";
-import { userProfile } from "@/types/campaign";
+import { organizer } from "@/types/campaign";
 import CrowdfundingToolbar from "./ToolBar";
 import { useState } from "react";
 import SearchOverlay from "./home/search-overlay";
 
-export default function Shell({ user }: { user: Promise<userProfile | null> }) {
+export default function Shell({ user }: { user: Promise<organizer | null> }) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   return (
     <>

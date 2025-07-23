@@ -1,3 +1,4 @@
+"use client";
 import { useState } from "react";
 import {
   Dialog,
@@ -12,16 +13,16 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Users, Mail, Phone, AlertCircleIcon } from "lucide-react";
-import { TokenPayload } from "@/types/Token";
 
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
+import { organizer } from "@/types/campaign";
 
 interface VolunteerModalProps {
   isOpen: boolean;
   onClose: () => void;
   campaignId: string;
   campaignTitle: string;
-  user: TokenPayload | null;
+  user: organizer;
   islogin: boolean;
 }
 
@@ -35,7 +36,7 @@ export function VolunteerModal({
 }: VolunteerModalProps) {
   const [formData, setFormData] = useState({
     id: campaignId,
-    name: user?.sub ?? "",
+    name: user?.firstname + " " + user?.lastname,
     email: user?.email ?? "",
     phone: "",
     skills: "",

@@ -10,6 +10,10 @@ const nextConfig: NextConfig = {
       new URL(
         "https://imagehandler.fra1.digitaloceanspaces.com/defautuser.jpg",
       ),
+      new URL("https://fra1.digitaloceanspaces.com/imagehandler/test.jpg"),
+      new URL(
+        "https://imagehandler.fra1.digitaloceanspaces.com/imagehandler/test.jpg",
+      ),
     ],
   },
 

@@ -1,9 +1,9 @@
 "use server";
 
-import { userProfile } from "@/types/campaign";
+import { organizer } from "@/types/campaign";
 import { cookies } from "next/headers";
 
-export async function getUserProfile(): Promise<userProfile | null> {
+export async function getUserProfile(): Promise<organizer | null> {
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get("token");

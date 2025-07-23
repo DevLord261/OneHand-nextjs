@@ -17,7 +17,7 @@ import Logo from "@/public/Logo.png";
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { userProfile } from "@/types/campaign";
+import { organizer } from "@/types/campaign";
 import { Logout } from "@/lib/actions/logout";
 import { redirect } from "next/navigation";
 
@@ -25,7 +25,7 @@ export default function CrowdfundingToolbar({
   userPromise,
   onSearchOpen,
 }: {
-  userPromise: Promise<userProfile | null>;
+  userPromise: Promise<organizer | null>;
   onSearchOpen?: () => void;
 }) {
   const data = use(userPromise);
